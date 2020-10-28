@@ -12,8 +12,9 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/authors/: authorsArr /', (req, res) => {
-    res.send(`Mes authors: ${authorsArr[req.params.authorsArr]}`);
+app.get('/authors/:authorsArr', (req, res) => {
+    res.send(`Mes authors: ${authorsArr[req.params.authorsArr]}`)
+    console.log( );
 });
 
 // app.get('/authors/: 1/', (req, res) => {
