@@ -42,9 +42,6 @@ const all=[
 
 
 
-
-
-
 app.get('/', (req, res) => {
   res.send('Authors API');
   console.log('Authors API')
