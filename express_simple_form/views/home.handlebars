@@ -1,9 +1,14 @@
 <h1>{{ title }}</h1>
-<p> {{students}} </p>
+
+
 <form method="post" action="/students/add">
     <input name="username" />
     <button type="submit">Send</button>
     <p style="font-size:48px">
-        &#128512; &#128516; &#128525; &#128151;
+        &#128512; &#128516; &#128525; &#128151; &#128152;
     </p>
 </form>
+
+
+<h1>{{otherTitle}}</h1>
+{{#each students}}<li>{{this}}</li>{{/each}}
