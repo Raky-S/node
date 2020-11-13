@@ -1,7 +1,6 @@
 const express = require("express");
 const exphbrs = require("express-handlebars");
-const multer = require('multer');
-const upload = multer({ dest: 'public/uploads/' });
+const multer = require("multer");
 const app = express();
 const port = 3000;
 const mongoose = require("mongoose");
@@ -10,16 +9,26 @@ mongoose.connect("mongodb://localhost:27017/upload", {
     useNewUrlParser: true,
 });
 
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads')
+    },
+    filename: function (req, file, cb) {
+        // console.log('file multer diskstorage', file);
+        //   cb(null, file.originalname)
+        let ext = file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length);
+        cb(null, Date.now() + ext)
+    }
+})
+
+var upload = multer({ storage: storage })
+
+
+
 app.set("view engine", "handlebars");
 
 app.engine("handlebars", exphbrs());
-
-app.use(express.static("public"));
-app.use(express.static("uploads"));
-
-
-let userarr = [];
-let imag = '';
 
 app.get("/", (req, res) => {
     res.render("home", {
@@ -27,14 +36,17 @@ app.get("/", (req, res) => {
     });
 });
 
-// const uploadSchema = new mongoose.Schema({
-//   username: String,
-//   firstName: String,
-//   surname: String,
-//   profilePicture: String,
-// });
+const uploadSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        index: true,
+    },
+    firstName: String,
+    surname: String,
+    profilePicture: String,
+});
 
-// const UserModel = mongoose.model('User', uploadSchema);
+const User = mongoose.model("User", uploadSchema);
 
 // UserModel.create({
 //     username: 'XENA',
@@ -45,17 +57,34 @@ app.get("/", (req, res) => {
 // .catch(err=>console.log(err))
 
 app.use(express.urlencoded({ extended: true }));
-
 app.use(express.json());
+app.use(express.static("public"));
 
-app.post("/upload", upload.single('avatar'), (req, res, next) => {
+app.post("/upload", upload.single("avatar"), async (req, res, next) => {
     let uservar = req.body.username;
-    userarr.push(uservar)
-    let img1 = req.file.img
-    console.log(img1);
+
+    const newUser = await User.create({
+        username: uservar,
+        profilePicture: req.file.filename,
+    });
+
+    console.log('newuser', newUser)
+
     res.render("uploadded", {
         username: uservar,
-        avatar: img1
+        id: newUser._id
+    });
+
+});
+
+app.get("/users/:id/", (req, res) => {
+    let result = User.findById(req.params.id, function (err, result) {
+        console.log('lelele', result)
+
+        res.render("userpage", {
+            userName: result.username,
+            profilePicture: result.profilePicture,
+        });
     });
 });
 
