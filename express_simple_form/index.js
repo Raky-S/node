@@ -5,19 +5,18 @@ const port = 3000
 
 const students = [];
 
-// const goBack =
 
 
-    app.engine('handlebars', exphbrs({
-        defaultLayout: false,
-        layoutsDir: __dirname + "views/"
-    }));
+app.engine('handlebars', exphbrs({
+    defaultLayout: false,
+    layoutsDir: __dirname + "views/"
+}));
 
 app.set('view engine', 'handlebars');
 
 
 app.get('/', (req, res) => {
-    console.log('students dans get',students);
+    console.log('students dans get', students);
     res.render('home', {
         title: 'Welcome to express simple form',
         students: students,
@@ -33,7 +32,7 @@ app.post('/students/add', (req, res) => {
     var username = req.body.username;
     console.log(username);
     students.push(username);
-    res.render ('studentsadded', {
+    res.render('studentsadded', {
         username: username
     })
 })
