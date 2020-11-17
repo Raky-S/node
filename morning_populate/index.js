@@ -1,3 +1,5 @@
+const StudentModel = require('./models/Student');
+
 async function student() {
     const AdressModel = require('./models/Address');
     const StudentModel = require('./models/Student');
@@ -27,16 +29,15 @@ async function student() {
     });
 
     const resStudent = await Student1.save()
-    }
-
-
+    
+    
     StudentModel
-    .findOne({ address: '5fb2f1992be52566fcc6b52c' })
-    .populate('StudentModel')
-    .exec((err, story) => {
-      console.log('The author is',story.StudentModel.surname);
-      // displays "The author is Ian Fleming"
+    .findOne({_id: Student1._id})
+    .populate('address')
+    .exec((err, result )=> {
+        console.log('The info student is',result)
     });
+}
 
 student()
 
