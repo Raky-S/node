@@ -7,9 +7,13 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required:true,
-    minlength: 8
+    length: 8
 },
-confirm_password:String,
+confirm_password: {
+  type: String,
+  required:true,
+  length: 8
+},
 firstname:String,
 surname:String,
 date:Date

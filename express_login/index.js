@@ -6,16 +6,18 @@ const mongoose = require("mongoose");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models").User; // same as: const User = require('./models/user');
+const age = require("./age");
+
 
 const port = process.env.PORT || 3000;
 
 mongoose.connect(
   process.env.MONGODB_URI ||
-    "mongodb://localhost:27017/authentication_exercise",
+  "mongodb://localhost:27017/authentication_exercise",
   {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   }
 );
 
@@ -34,7 +36,7 @@ app.use(
     secret: "konexioasso07",
     resave: false,
     saveUninitialized: false,
-    store: new MongoStore({ mongooseConnection: mongoose.connection })
+    store: new MongoStore({ mongooseConnection: mongoose.connection }),
   })
 );
 
@@ -52,11 +54,20 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 
+
+
+
+
+
 app.get("/admin", (req, res) => {
   console.log("GET /admin");
   if (req.isAuthenticated()) {
     console.log(req.user);
-    res.render("admin");
+    res.render("admin", {
+      surname: req.user.surname,
+      firstname: req.user.firstname,
+      date:age(req.user.date),
+    });
   } else {
     res.redirect("/");
   }
@@ -75,31 +86,9 @@ app.post("/signup", (req, res) => {
   console.log("POST /signup");
   // create a user with the defined model with
   // req.body.username, req.body.password
-
-  // WITHOUT PASSPORT
-
-  // const username = req.body.username;
-  // const password = req.body.password;
-
-  // User.findOne({username: username}, (user) => {
-  //   if (user === null) {
-  //     const newUser = new User({
-  //       username: username,
-  //       password: password,
-  //     });
-  //     newUser.save((err, obj) => {
-  //       if (err) {
-  //         console.log('/signup user save err', err);
-  //         res.render('500');
-  //       } else {
-  //         // Save a collection session with a token session and
-  //         // a session cookie in the browser
-  //       }
-  //     });
-  //   }
-  // });
-
   console.log("will signup");
+
+
 
   const username = req.body.username;
   const email = req.body.email;
@@ -108,6 +97,8 @@ app.post("/signup", (req, res) => {
   const firstname = req.body.firstname;
   const surname = req.body.surname;
   const date = req.body.date;
+
+
 
 
 
@@ -121,10 +112,11 @@ app.post("/signup", (req, res) => {
       surname: surname,
       date: date,
     }),
-    password, // password will be hashed
+    password,
     (err, user) => {
-      if (err) {
-        console.log("/signup user register err", err);
+      if (password !== confirm_password) {
+        console.log("/signup user register err", err)
+          ;
         return res.render("signup");
       } else {
         passport.authenticate("local")(req, res, () => {
@@ -143,31 +135,31 @@ app.get("/login", (req, res) => {
   }
 });
 
+
+// const email = req.body.email;
+// const password = req.body.password;
 app.post(
   "/login",
-  passport.authenticate("local", {
+  passport.authenticate("local", 
+  // {
+  //   if (password !== password) {
+  //     console.log("/signup user register err", err)
+  //       ;
+  //     return res.render("signup");
+  //   } else {
+  //     passport.authenticate("local")(req, res, () => {
+  //       res.redirect("/admin");
+  //     });
+  //   }
+  // }
+  {
     successRedirect: "/admin",
-    failureRedirect: "/login"
+    failureRedirect: "/login",
   })
 );
 
-// Without Passport
 
-// app.post("/login", (req, res) => {
-//   const md5 = require("md5"); // there for education purpose, if using this method, put it in the top of your file
-//   User.find(
-//     {
-//       username: req.body.username,
-//       password: md5(req.body.password)
-//     },
-//     (users) => {
-//       // create a session cookie in the browser
-//       // if the password is good
-//       // and redirect to /admin
-//     }
-//   );
-//   res.send("login");
-// });
+
 
 app.get("/logout", (req, res) => {
   console.log("GET /logout");
