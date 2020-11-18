@@ -98,10 +98,7 @@ app.post("/signup", (req, res) => {
   const surname = req.body.surname;
   const date = req.body.date;
 
-
-
-
-
+  
   User.register(
     new User({
       username: username,
@@ -128,13 +125,16 @@ app.post("/signup", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  console.log('iiiiiiiiiiiiiiiccccccccccccciiiiiiiiiiiiiiii',req.isAuthenticated());
   if (req.isAuthenticated()) {
-    res.redirect("/admin");
+    res.redirect("/admin" , {
+      // email: req.body.email,
+      // password: req.body.password,
+    });
   } else {
-    res.render("login");
+    res.render("/admin");
   }
 });
-
 
 // const email = req.body.email;
 // const password = req.body.password;
