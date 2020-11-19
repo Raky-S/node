@@ -8,7 +8,7 @@ const LocalStrategy = require("passport-local");
 const User = require("./models").User; // same as: const User = require('./models/user');
 const age = require("./age");
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 mongoose.connect(
   process.env.MONGODB_URI ||
@@ -44,28 +44,78 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Passport configuration
-passport.use(
-  new LocalStrategy(
-    // User.authenticate()))
-    {
-      usernameField: "email",
-      passwordField: "password",
-    },
-    async (email, password, done) => {
-      console.log("email", email);
-      console.log("password", password);
-      console.log("done", done);
-      try {
-        await User.findOne({ email }, function (err, user) {
-          if (err) return done(err);
-          if (!User) return done(null, false);
-        });
-      } catch (err) {
-        console.error(err);
+
+
+User.validPassword = function(password){
+    // console.log("Validate password", password);
+    };
+    // logo.validPassword(""); // -> message: 'Validate password',''
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.findOne({ username: username }, function(err, user) {
+      if (err) { return done(err); }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
       }
-    }
-  )
-);
+      if (!User.validPassword()) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
+    });
+  }
+));
+
+// passport.use(
+//     new LocalStrategy(
+//       // User.authenticate()))
+//       {
+//         usernameField: "email",
+//         passwordField: "password",
+//       },
+//       async (email, password, done) => {
+//         console.log("email", email);
+//         console.log("password", password);
+//         console.log("done", done);
+//         try {
+//           await User.findOne({ email }, function (err, user) {
+//             if (err) return done(err);
+//             if (!User) return done(null, false);
+//           });
+//         } catch (err) {
+//           console.error(err);
+//         }
+//       }
+//     )
+//   );
+
+
+// passport.use(new LocalStrategy(
+//   // (User.authenticate()))
+//     {
+//       email: "email",
+//       password: "password",
+//     },
+//     async (email, password, done) => {
+//       console.log("email", email);
+//       console.log("password", password);
+//       console.log("done", done);
+//       try {
+//         await User.findOne({ email }, function (err, user) {
+//           if (err) return done(err);
+//           if (!User) return done(null, false);
+//           // passwordHash.compare(password, User.password, function (err, res) {
+//           //   if (err) return done(err);
+//           //   if (!res) return done(null, false);
+//           //   done(null, user);
+//           // });
+//         });
+//       } catch (err) {
+//         console.error(err);
+//       }
+//     }
+//   )
+// );
 passport.serializeUser(User.serializeUser()); // Save the user.id to the session
 passport.deserializeUser(User.deserializeUser()); // Receive the user.id from the session and fetch the User from the DB by its ID
 
@@ -90,7 +140,7 @@ app.get("/admin", (req, res) => {
 
 app.get("/signup", async (req, res) => {
   // console.log("GET /signup");
-  // console.log(1);
+  console.log('requettttte',req);
   if (req.isAuthenticated()) {
     res.redirect("/admin");
   } else {
@@ -139,8 +189,6 @@ app.post("/signup", async (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  // console.log('req.isAuthenticated',req.isAuthenticated);
-
   if (req.isAuthenticated()) {
     res.redirect("/admin");
   } else {
@@ -153,7 +201,7 @@ app.post(
   // console.log('APPPOST', passport.authenticate),
   passport.authenticate("local", {
     successRedirect: "/admin",
-    failureRedirect: "/admin",
+    failureRedirect: "/login",
   }),(req, res)=>{
     console.log('un message');
   }

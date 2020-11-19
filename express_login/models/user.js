@@ -7,12 +7,12 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required:true,
-    length: 8
+    length: 1
 },
 confirm_password: {
   type: String,
   required:true,
-  length: 8
+  length: 1
 },
 firstname:String,
 surname:String,
