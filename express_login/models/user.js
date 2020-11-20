@@ -9,11 +9,11 @@ const UserSchema = new mongoose.Schema({
     required:true,
     length: 1
 },
-confirm_password: {
-  type: String,
-  required:true,
-  length: 1
-},
+// confirm_password: {
+//   type: String,
+//   required:true,
+//   length: 1
+// },
 firstname:String,
 surname:String,
 date:Date

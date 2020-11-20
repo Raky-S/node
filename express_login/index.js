@@ -3,6 +3,7 @@ const exphbs = require("express-handlebars");
 const expressSession = require("express-session");
 const MongoStore = require("connect-mongo")(expressSession);
 const mongoose = require("mongoose");
+const { session } = require("passport");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models").User; // same as: const User = require('./models/user');
@@ -12,7 +13,7 @@ const port = process.env.PORT || 3000;
 
 mongoose.connect(
   process.env.MONGODB_URI ||
-  "mongodb://localhost:27017/authentication_exercise",
+    "mongodb://localhost:27017/authentication_exercise",
   {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -56,16 +57,17 @@ passport.use(
       console.log("password", password);
       console.log("done", done);
       try {
-        await User.findOne({ email }, function (err, user) {
-          if (err) return done(err);
-          if (!User) return done(null, false);
-        });
+        const user = await User.findOne({ email });
+        if (!user) return done(null, false);
+        if (user.password == password) return done(null, user);
       } catch (err) {
         console.error(err);
+        done(err);
       }
     }
   )
 );
+
 passport.serializeUser(User.serializeUser()); // Save the user.id to the session
 passport.deserializeUser(User.deserializeUser()); // Receive the user.id from the session and fetch the User from the DB by its ID
 
@@ -98,45 +100,28 @@ app.get("/signup", async (req, res) => {
   }
 });
 
-app.post("/signup", async (req, res) => {
-  // console.log(2);
-
-  console.log("POST /signup");
-  // create a user with the defined model with
-  // req.body.username, req.body.password
-  console.log("will signup");
-
-  const username = req.body.username;
-  const email = req.body.email;
-  const password = req.body.password;
-  const confirm_password = req.body.confirm_password;
-  const firstname = req.body.firstname;
-  const surname = req.body.surname;
-  const date = req.body.date;
-
-  User.register(
-    new User({
-      username: username,
-      email: email,
-      password: password,
-      confirm_password: confirm_password,
-      firstname: firstname,
-      surname: surname,
-      date: date,
-    }),
-    password,
-    (err, user) => {
-      if (password !== confirm_password) {
-        console.log("/signup user register err", err);
-        return res.render("signup");
-      } else {
-        passport.authenticate("local")(req, res, () => {
-          res.redirect("/admin");
-        });
+app.post(
+  "/signup",
+  (req, res, next) => {
+    const { username, email, password, firstname } = req.body;
+    User.create(
+      {
+        username,
+        email,
+        password,
+        firstname,
+      },
+      (err, user) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        next();
       }
-    }
-  );
-});
+    );
+  },
+  passport.authenticate("local"),
+  (req, res) => res.redirect("/admin")
+);
 
 app.get("/login", (req, res) => {
   // console.log('req.isAuthenticated',req.isAuthenticated);
@@ -153,9 +138,10 @@ app.post(
   // console.log('APPPOST', passport.authenticate),
   passport.authenticate("local", {
     successRedirect: "/admin",
-    failureRedirect: "/admin",
-  }),(req, res)=>{
-    console.log('un message');
+    failureRedirect: "/login",
+  }),
+  (req, res) => {
+    console.log("un message");
   }
 );
 
