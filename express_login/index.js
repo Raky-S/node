@@ -9,7 +9,7 @@ const LocalStrategy = require("passport-local");
 const User = require("./models").User; // same as: const User = require('./models/user');
 const age = require("./age");
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 mongoose.connect(
   process.env.MONGODB_URI ||
@@ -90,7 +90,7 @@ app.get("/admin", (req, res) => {
   }
 });
 
-app.get("/signup", async (req, res) => {
+app.get("/signup",  (req, res) => {
   // console.log("GET /signup");
   // console.log(1);
   if (req.isAuthenticated()) {
@@ -125,7 +125,6 @@ app.post(
 
 app.get("/login", (req, res) => {
   // console.log('req.isAuthenticated',req.isAuthenticated);
-
   if (req.isAuthenticated()) {
     res.redirect("/admin");
   } else {

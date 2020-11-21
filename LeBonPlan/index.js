@@ -1,0 +1,155 @@
+const express = require("express");
+const exphbs = require("express-handlebars");
+const expressSession = require("express-session");
+const MongoStore = require("connect-mongo")(expressSession);
+const mongoose = require("mongoose");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models").User; // same as: const User = require('./models/user');
+const router = express.Router();
+const app = express();
+const productsRoutes = require('./controllers/products');
+const usersRoutes = require('./controllers/users');
+const { session } = require("passport");
+const expressValidator = require("express-validator");
+const validationResult = expressValidator.validationResult;
+const body = expressValidator.body;
+const port = process.env.PORT || 3000;
+mongoose.connect(
+    process.env.MONGODB_URI ||
+    "mongodb://localhost:27017/leBonPlan",
+    {
+        useNewUrlParser: true,
+        useCreateIndex: true,
+        useUnifiedTopology: true
+    }
+);
+
+app.use(
+    expressSession({
+        secret: "konexioasso07",
+        resave: false,
+        saveUninitialized: false,
+        store: new MongoStore({ mongooseConnection: mongoose.connection })
+    })
+);
+
+// enable Passport
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(
+    // User.authenticate()))
+    {
+        usernameField: "username",
+        passwordField: "password",
+      },
+      async (username, password, done) => {
+        // console.log("email", email);
+        console.log("password", password);
+        console.log("done", done);
+        try {
+          const user = await User.findOne({ username });
+          if (!user) return done(null, false);
+          if (user.password == password) return done(null, user);
+        } catch (err) {
+          console.error(err);
+          done(err);
+        }
+      }
+    )
+  );
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+
+// Express configuration
+
+app.use('/products', productsRoutes);
+app.use('/users', usersRoutes);
+app.engine("handlebars", exphbs());
+app.set("view engine", "handlebars");
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.get("/", (req, res) => {
+    console.log("GET /");
+    res.render("home");
+});
+
+app.get("/profil", (req, res) => {
+    console.log("GET /profil");
+    if (req.isAuthenticated()) {
+      console.log(req.user);
+      res.render("profil", {
+        surname: req.user.surname,
+        firstname: req.user.firstname,
+      });
+    } else {
+      res.redirect("/");
+    }
+  });
+
+  
+app.get("/signup", (req, res) => {
+    console.log("GET /signup", req.isAuthenticated());
+    // console.log(1);
+    if (req.isAuthenticated()) {
+        res.redirect("/profil");
+    } else {
+        res.render("signup");
+    }
+});
+
+app.post(
+    "/signup",
+    (req, res, next) => {
+        const { username, lastname, password, firstname } = req.body;
+        User.create(
+            {
+                username,
+                lastname,
+                password,
+                firstname,
+            },
+            (err, user) => {
+                if (err) {
+                    return res.status(500).send(err);
+                }
+                next();
+            }
+        );
+    },
+    passport.authenticate("local"),
+    (req, res) => res.redirect("/profil")
+);
+app.get("/login", (req, res) => {
+    // console.log('req.isAuthenticated',req.isAuthenticated);
+    if (req.isAuthenticated()) {
+        res.redirect("/");
+    } else {
+        res.render("login");
+    }
+});
+
+app.post(
+    "/login",
+    // console.log('APPPOST', passport.authenticate),
+    passport.authenticate("local", {
+        successRedirect: "/profil",
+        failureRedirect: "/login",
+    }),
+    (req, res) => {
+        console.log("un message");
+    }
+);
+
+app.get("/logout", (req, res) => {
+    // console.log("GET /logout", req);
+    req.logout();
+    res.redirect("/");
+});
+
+app.listen(port, () => {
+    console.log(`Server started on port: ${port}`);
+});
