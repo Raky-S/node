@@ -25,6 +25,13 @@ mongoose.connect(
     }
 );
 
+app.use('/products', productsRoutes);
+app.use('/users', usersRoutes);
+app.engine("handlebars", exphbs());
+app.set("view engine", "handlebars");
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 app.use(
     expressSession({
         secret: "konexioasso07",
@@ -37,27 +44,28 @@ app.use(
 // enable Passport
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new LocalStrategy(
-    // User.authenticate()))
-    {
-        usernameField: "username",
-        passwordField: "password",
-      },
-      async (username, password, done) => {
-        // console.log("email", email);
-        console.log("password", password);
-        console.log("done", done);
-        try {
-          const user = await User.findOne({ username });
-          if (!user) return done(null, false);
-          if (user.password == password) return done(null, user);
-        } catch (err) {
-          console.error(err);
-          done(err);
-        }
-      }
-    )
-  );
+
+// Passport configuration
+passport.use(new LocalStrategy(User.authenticate()))
+//     {
+//         usernameField: "username",
+//         passwordField: "password",
+//     },
+//     async (username, password, done) => {
+//         // console.log("email", email);
+//         console.log("password", password);
+//         console.log("done", done);
+//         try {
+//             const user = await User.findOne({ username });
+//             if (!user) return done(null, false);
+//             if (user.password == password) return done(null, user);
+//         } catch (err) {
+//             console.error(err);
+//             done(err);
+//         }
+//     }
+// )
+// );
 
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
@@ -65,12 +73,6 @@ passport.deserializeUser(User.deserializeUser());
 
 // Express configuration
 
-app.use('/products', productsRoutes);
-app.use('/users', usersRoutes);
-app.engine("handlebars", exphbs());
-app.set("view engine", "handlebars");
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 
 app.get("/", (req, res) => {
     console.log("GET /");
@@ -80,17 +82,17 @@ app.get("/", (req, res) => {
 app.get("/profil", (req, res) => {
     console.log("GET /profil");
     if (req.isAuthenticated()) {
-      console.log(req.user);
-      res.render("profil", {
-        surname: req.user.surname,
-        firstname: req.user.firstname,
-      });
+        console.log(req.user);
+        res.render("profil", {
+            surname: req.user.surname,
+            firstname: req.user.firstname,
+        });
     } else {
-      res.redirect("/");
+        res.redirect("/");
     }
-  });
+});
 
-  
+
 app.get("/signup", (req, res) => {
     console.log("GET /signup", req.isAuthenticated());
     // console.log(1);
@@ -101,32 +103,61 @@ app.get("/signup", (req, res) => {
     }
 });
 
+// app.post(
+//     "/signup",
+//     (req, res, next) => {
+//         const { username, lastname, password, firstname } = req.body;
+//         User.create(
+//             {
+//                 username,
+//                 lastname,
+//                 password,
+//                 firstname,
+//             },
+//             (err, user) => {
+//                 if (err) {
+//                     return res.status(500).send(err);
+//                 }
+//                 next();
+//             }
+//         );
+//     },
+//     passport.authenticate("local"),
+//     (req, res) => res.redirect("/profil")
+// );
+
 app.post(
     "/signup",
     (req, res, next) => {
-        const { username, lastname, password, firstname } = req.body;
-        User.create(
-            {
-                username,
-                lastname,
-                password,
-                firstname,
-            },
-            (err, user) => {
-                if (err) {
-                    return res.status(500).send(err);
-                }
-                next();
-            }
-        );
-    },
-    passport.authenticate("local"),
-    (req, res) => res.redirect("/profil")
-);
+        const { username, surname, password, firstname } = req.body;
+
+User.register(
+    new User({
+        username,
+        surname,
+        password,
+        firstname,
+    }),
+    password, // password will be hashed
+    (err, user) => {
+      if (err) {
+        console.log("/signup user register err", err);
+        return res.render("signup");
+      } else {
+        passport.authenticate("local")(req, res, () => {
+          res.redirect("/profil");
+        });
+      }
+    }
+  );
+});
+
+
+
 app.get("/login", (req, res) => {
     // console.log('req.isAuthenticated',req.isAuthenticated);
     if (req.isAuthenticated()) {
-        res.redirect("/");
+        res.redirect("/profil");
     } else {
         res.render("login");
     }
