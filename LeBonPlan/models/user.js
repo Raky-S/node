@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
   },
   firstname: String,
   surname: String,
+  profilePicture: String
 });
 
 UserSchema.plugin(passportLocalMongoose);

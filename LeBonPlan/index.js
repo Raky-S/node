@@ -8,6 +8,8 @@ const LocalStrategy = require("passport-local");
 const User = require("./models").User; // same as: const User = require('./models/user');
 const router = express.Router();
 const app = express();
+const multer = require("multer");
+// const upload = multer({ dest: 'public/uploads/' });
 const productsRoutes = require('./controllers/products');
 const usersRoutes = require('./controllers/users');
 const { session } = require("passport");
@@ -15,6 +17,7 @@ const expressValidator = require("express-validator");
 const { static } = require("express");
 const validationResult = expressValidator.validationResult;
 const body = expressValidator.body;
+// const fileNameConverter = require('./fileNameConverter');
 const port = process.env.PORT || 3000;
 mongoose.connect(
     process.env.MONGODB_URI ||
@@ -25,6 +28,21 @@ mongoose.connect(
         useUnifiedTopology: true
     }
 );
+
+let storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "public/uploads");
+    },
+    filename: function (req, file, cb) {
+        let ext = file.originalname.substring(
+          file.originalname.lastIndexOf("."),
+          file.originalname.length
+        );
+        cb(null, Date.now() + ext);
+    },
+});
+let upload = multer({ storage: storage });
+
 
 app.use('/products', productsRoutes);
 app.use('/users', usersRoutes);
@@ -49,26 +67,6 @@ app.use(passport.session());
 
 // Passport configuration
 passport.use(new LocalStrategy(User.authenticate()))
-//     {
-//         usernameField: "username",
-//         passwordField: "password",
-//     },
-//     async (username, password, done) => {
-//         // console.log("email", email);
-//         console.log("password", password);
-//         console.log("done", done);
-//         try {
-//             const user = await User.findOne({ username });
-//             if (!user) return done(null, false);
-//             if (user.password == password) return done(null, user);
-//         } catch (err) {
-//             console.error(err);
-//             done(err);
-//         }
-//     }
-// )
-// );
-
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
@@ -83,6 +81,20 @@ app.get("/", (req, res) => {
         // username: req.user.username,
     });
 });
+
+// app.post('/upload', upload.single('avatar'), (req, res) => {
+//     console.log(req.file);
+// });
+
+app.post("/upload", upload.single("avatar"), async (req, res, next) => {
+    let uservar = req.body.username;
+  
+    const newUser = await User.create({
+      profilePicture: req.file.filename,
+    });
+      console.log("newuser", newUser);
+
+  });
 
 app.get("/profil", (req, res) => {
     console.log("GET /profil");
@@ -99,7 +111,6 @@ app.get("/profil", (req, res) => {
     }
 });
 
-
 app.get("/signup", (req, res) => {
     console.log("GET /signup", req.isAuthenticated());
     // console.log(1);
@@ -109,29 +120,6 @@ app.get("/signup", (req, res) => {
         res.render("signup");
     }
 });
-
-// app.post(
-//     "/signup",
-//     (req, res, next) => {
-//         const { username, lastname, password, firstname } = req.body;
-//         User.create(
-//             {
-//                 username,
-//                 lastname,
-//                 password,
-//                 firstname,
-//             },
-//             (err, user) => {
-//                 if (err) {
-//                     return res.status(500).send(err);
-//                 }
-//                 next();
-//             }
-//         );
-//     },
-//     passport.authenticate("local"),
-//     (req, res) => res.redirect("/profil")
-// );
 
 app.post(
     "/signup",

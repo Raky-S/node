@@ -4,9 +4,7 @@
 {{> navUnLogged}}
 {{/if}}
 
-
-
-<form action='/signup' method='POST'>
+<form action='/signup' method="post">
     <div class="form-row">
         <div class="col-md-6 mb-3">
             <label for="validationTooltip01">First name</label>
@@ -28,10 +26,14 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6 mb-3">
+        {{!-- <div class="col-md-6 mb-3">
             <label for="validationTooltip04">User Image</label>
-            <input class="btn btn-warning" type="file" name='avatar' />
-        </div>
+            <input class="btn btn-warning" type="file" name='avatar'  enctype='multipart/form-data' action='/upload' />
+        </div> --}}
+        <form enctype='multipart/form-data' action='/upload' method='post'>
+            <input type="file" name='avatar' />
+            <button class="btn btn-primary" type="submit">User Image</button>
+        </form>
         <div class="col-md-6 mb-3">
             <button class="btn btn-primary " type="submit">Submit form</button>
         </div>
