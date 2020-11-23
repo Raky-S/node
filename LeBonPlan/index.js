@@ -12,6 +12,7 @@ const productsRoutes = require('./controllers/products');
 const usersRoutes = require('./controllers/users');
 const { session } = require("passport");
 const expressValidator = require("express-validator");
+const { static } = require("express");
 const validationResult = expressValidator.validationResult;
 const body = expressValidator.body;
 const port = process.env.PORT || 3000;
@@ -31,6 +32,7 @@ app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static('public'));
 
 app.use(
     expressSession({
@@ -75,8 +77,11 @@ passport.deserializeUser(User.deserializeUser());
 
 
 app.get("/", (req, res) => {
-    console.log("GET /");
-    res.render("home");
+    // console.log("GET /");
+    res.render("home", {
+        isUserLogged: req.isAuthenticated(),
+        // username: req.user.username,
+    });
 });
 
 app.get("/profil", (req, res) => {
@@ -86,6 +91,8 @@ app.get("/profil", (req, res) => {
         res.render("profil", {
             surname: req.user.surname,
             firstname: req.user.firstname,
+            username: req.user.username,
+            isUserLogged: req.isAuthenticated(),
         });
     } else {
         res.redirect("/");
@@ -131,26 +138,26 @@ app.post(
     (req, res, next) => {
         const { username, surname, password, firstname } = req.body;
 
-User.register(
-    new User({
-        username,
-        surname,
-        password,
-        firstname,
-    }),
-    password, // password will be hashed
-    (err, user) => {
-      if (err) {
-        console.log("/signup user register err", err);
-        return res.render("signup");
-      } else {
-        passport.authenticate("local")(req, res, () => {
-          res.redirect("/profil");
-        });
-      }
-    }
-  );
-});
+        User.register(
+            new User({
+                username,
+                surname,
+                password,
+                firstname,
+            }),
+            password, // password will be hashed
+            (err, user) => {
+                if (err) {
+                    console.log("/signup user register err", err);
+                    return res.render("signup");
+                } else {
+                    passport.authenticate("local")(req, res, () => {
+                        res.redirect("/profil");
+                    });
+                }
+            }
+        );
+    });
 
 
 

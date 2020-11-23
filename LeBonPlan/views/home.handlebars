@@ -1,50 +1,5 @@
-<ul>
-    <li>
-        <a href='/Paris'>Paris</a>
-    </li>
-    <li>
-        <a href='/Lyon'>Lyon</a>
-    </li>
-    <li>
-        <a href='/Marseille'>Marseille</a>
-    </li>
-    <li>
-        <a href='/login'>Login</a>
-    </li>
-    <li>
-        <a href='/signup'>Signup</a>
-    </li>
-</ul>
-
-
-{{!-- <header style= 'color:blue'>LE BON PLAN</header>
-
-<nav style="background-color: aqua;">
-    <ul>
-        <li>
-            <a href='/login'>Login</a>
-        </li>
-        <li>
-            <a href='/signup'>Signup</a>
-        </li>
-    </ul>
-    <h2>username: {{username}}</h2>
-
-
-<a href="/logout">logout</a>
-</nav>
-
-
-
-<ul>
-    <li>
-        <a href='/Paris'>Paris</a>
-    </li>
-    <li>
-        <a href='/Lyon'>Lyon</a>
-    </li>
-    <li>
-        <a href='/Marseille'>Marseille</a>
-    </li>
-
-</ul> --}}
+{{#if isUserLogged}}
+{{> navLoggedIn}}
+{{else}}
+{{> navUnLogged}}
+{{/if}}

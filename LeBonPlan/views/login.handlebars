@@ -1,3 +1,10 @@
+{{#if isUserLogged}}
+{{> navLoggedIn}}
+{{else}}
+{{> navUnLogged}}
+{{/if}}
+
+
 <form action="/login" method="POST">
   <h2>Username</h2>
   <input type="text" placeholder="Username" name="username" />

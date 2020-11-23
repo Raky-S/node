@@ -1,3 +1,11 @@
+{{#if isUserLogged}}
+{{> navLoggedIn}}
+{{else}}
+{{> navUnLogged}}
+{{/if}}
+
+
+
 <h1>My profil</p>
 <h2>Firstname: {{firstname}}</h2>
 <h2>Surname: {{surname}}</h2>
