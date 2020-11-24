@@ -3,8 +3,9 @@ const passportLocalMongoose = require('passport-local-mongoose');
 
 const ProductSchema = new mongoose.Schema({
   productName: String,
-  Tag:String,
-  ref: Number,
+  tag: String,
+  price: Number,
+  productPicture: String,
 });
 
 ProductSchema.plugin(passportLocalMongoose);

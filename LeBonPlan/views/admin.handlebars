@@ -1,0 +1,42 @@
+{{#if isUserLogged}}
+{{> navLoggedIn}}
+{{else}}
+{{> navUnLogged}}
+{{/if}}
+
+
+<form method="post" action='/product' enctype='multipart/form-data'>
+
+    <div class="input-group mb-3">
+        <input type="text" placeholder="product name" name="productName" />
+        <div class="input-group-append">
+            <span class="input-group-text">Nom du produit</span>
+        </div>
+    </div>
+
+    <div class="input-group mb-3">
+        <input type="file" name='productPicture' class="form-control" />
+        <div class="input-group-append">
+            <span class="input-group-text">Image produit</span>
+        </div>
+    </div>
+
+    <div class="input-group mb-3">
+        <textarea class="form-control" name="tag" aria-label="With textarea"></textarea>
+        <div class="input-group-prepend">
+            <span class="input-group-text">info produit</span>
+        </div>
+    </div>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+        </div>
+        <input type="text" name="price" class="form-control" aria-label="Amount (to the nearest dollar)">
+        <div class="input-group-append">
+            <span class="input-group-text">.00</span>
+            <span class="input-group-text">€</span>
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Submit form</button>
+</form>
