@@ -10,6 +10,7 @@ const Product = require("./models").Product;
 const router = express.Router();
 const app = express();
 const multer = require("multer");
+// const upload = multer({ dest: 'public/uploads/' });
 const productsRoutes = require('./controllers/products');
 const usersRoutes = require('./controllers/users');
 const { session } = require("passport");
@@ -111,30 +112,8 @@ app.get("/signup", (req, res) => {
     }
 });
 
-const User1= app.post("/signup", upload.single("avatar"), async (req, res, next) => {
-    console.log('req.body', req.body);
-    const { username, surname, password, firstname } = req.body;
 
-    User.register(new User({
-        username,
-        surname,
-        password,
-        firstname,
-        profilePicture: req.file.filename,
-    }),
-        password, // password will be hashed
-        (err, user) => {
-            if (err) {
-                console.log("/signup user register err", err);
-                return res.render("signup");
-            } else {
-                passport.authenticate("local")(req, res, () => {
-                    res.redirect("/profil");
-                });
-            }
-        }
-    );
-});
+
 
 app.get("/login", (req, res) => {
     // console.log('req.isAuthenticated',req.isAuthenticated);
@@ -170,80 +149,32 @@ app.get("/admin", (req, res) => {
     }
 });
 
-app.post("/admin", upload.single("productPicture"), async (req, res, next) => {
-    console.log('reqqqqqqqqqqqq  req.user._id',  req.user._id);
-
-    const { productName, tag, price, } = req.body;
-
-    try {
-
-       const listOfProduct= await Product.create(
-            new Product({
-                productName,
-                tag,
-                price,
-                userId: req.user._id,
-                productPicture: req.file.filename,
-
-            }));
-        res.redirect("/product")
-    } catch (error) {
-        console.log('error', error);
-        res.status(500).json(error)
-    }
-});
-
-app.get('/product', async (req, res) => {
-    
-    const { productName, tag, price, } = req.body;
-    // console.log('req.body.user', req.user);
-
-// console.log('req.body dans app.gettttttttttttttttttttttttt', req)
-    try {
-        // const listOfProduct = await Product.find({_id: req.user._id}).lean().exec();
-
-        if (req.isAuthenticated()) {
-            res.render("product", {
-                isUserLogged: req.isAuthenticated(),
-                username: req.user ? req.user.username : null,
-                profilePicture: req.user.profilePicture,
-                productName,
-                tag,
-                price,
-                // productPicture: req.body.productPicture,
-                
-                // listOfProduct
-            });
-        } else {
-            res.redirect("/");
-        }
-
-    }catch (error){
-        console.log('error', error);
-        res.status(500).json(error)
-    }
-});
-
-app.post('/product',  async(req, res) => {
-    // console.log('req du file product', req.file)
-    const { productName, tag, price, } = req.body;
-    
-    try {
-  
-        res.render('product', {
+const Product1 = app.post("/admin", upload.single("avatar"), async (req, res, next) => {
+    console.log('req.body', req.body);
+    const { productName, tag, price } = req.body;
+    Product.register(
+        new Product({
             productName,
             tag,
             price,
-            // productPicture: req.file.filename,
-            // isUserLogged: req.isAuthenticated(),
-            // username: req.user ? req.user.username : null,
-            // profilePicture: req.user.profilePicture
-        })
-    } catch (error) {
-        console.log('error', error);
-        res.status(500).json(error)
-    }
+            userId: User1._id,
+            productPicture: req.file.filename,
 
+        })
+    );
+    res.render("/product")
+});
+
+app.post('/product', (req, res) => {
+    console.log('req du body', req.body)
+    const { productName, tag, price, } = req.body;
+    res.render('product', {
+        productName,
+        tag,
+        price,
+        // productPicture: req.product.productPicture,
+        isUserLogged: req.isAuthenticated(),
+    })
 });
 
 app.get("/", (req, res) => {
@@ -258,6 +189,13 @@ app.get("/logout", (req, res) => {
     res.redirect("/");
 
 });
+
+Product
+    .findOne({ _id: Product1._id })
+    .populate('userId')
+    .exec((err, result) => {
+        // console.log('The info student is', result)
+    });
 
 app.listen(port, () => {
     console.log(`Server started on port: ${port}`);
