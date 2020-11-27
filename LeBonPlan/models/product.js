@@ -8,7 +8,12 @@ const ProductSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Types.ObjectId,
     ref: "User"
-  }
+  },
+  cities: {
+    type: String,
+    enum: ['paris', 'lyon', 'marseille'],
+    required: true,
+},
 });
 
 
