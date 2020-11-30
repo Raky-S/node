@@ -22,7 +22,7 @@ const { PORT, MONGODB_URI, API_KEY } = process.env;
 const port = process.env.PORT || 3000;
 mongoose.connect(
     process.env.MONGODB_URI ||
-    "mongodb://localhost:27017/leBonPlan",
+    "MONGODB_URI=mongodb+srv://admin-lebonplan:O7kyv0x9JwxXeuuh@cluster0.gwqfu.mongodb.net/leBonPlan?retryWrites=true&w=majority",
     {
         useNewUrlParser: true,
         useCreateIndex: true,
